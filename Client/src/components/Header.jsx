@@ -42,8 +42,8 @@ export const Header = () => {
     >
       <div
         className={`flex ${
-          showSearchBar ? 'justify-around' : 'justify-between px-10'
-        } w-screen max-w-screen-xl`}
+          showSearchBar ? 'justify-between' : 'justify-between px-10'
+        } w-screen max-w-screen-2xl`}
       >
         <a href="/" className="flex items-center gap-1">
           <img

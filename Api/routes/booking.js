@@ -1,13 +1,8 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { isLoggedIn } = require('../middleware/user.js');
-// const{handlePostPayment}=require('../controllers/payment.js')
+const { isLoggedIn } = require("../middleware/user.js");
+const handleCheckoutPayment = require("../controllers/payment.js")
 
-// const {
-//   createBookings,
-//   getBookings,
-// } = require('../controllers/bookingController');
-
-// router.post("/create-checkout-session",handlePostPayment);
+router.post("/create-checkout-session",handleCheckoutPayment);
 
 module.exports = router;

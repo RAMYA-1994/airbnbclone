@@ -1,19 +1,22 @@
-import React from 'react'
-import {Routes,Route} from 'react-router-dom'
-import Home from './pages/Home'
-import BookingForm from './components/BookingForm'
-import {Avatar} from "@nextui-org/react";
-
+import { Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/LoginPage"; // Assuming you have a Login component
+import Signup from "./pages/RegisterPage"; // Assuming you have a Signup component
+import BookingForm from "./components/BookingForm";
+import BookingProvider from "./Context/Bookingprovider"; // Ensure correct path
+import ProtectedRouter from "./utils/ProtectedRouter";
 
 export default function App() {
   return (
-    <>
-    <Routes>
-      <Route path='/' Component={Home}/>
-      <Route path='/Login' Component={''}/>
-      <Route path='/Signup' Component={''}/>
-      <Route path='/confirmbooking' Component={BookingForm}/>
-    </Routes>
-    </>
-  )
+    <BookingProvider>
+      <Routes>
+        <Route path="/Login" element={<Login />} />
+        <Route element={<ProtectedRouter />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/Signup" element={<Signup />} />
+          <Route path="/confirmbooking" element={<BookingForm />} />
+        </Route>
+      </Routes>
+    </BookingProvider>
+  );
 }
