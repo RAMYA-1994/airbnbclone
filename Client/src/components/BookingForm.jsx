@@ -19,7 +19,7 @@ const BookingPage = () => {
 
       // Prepare data for Stripe Checkout
       const response = await axios.post(
-        "http://localhost:8080/booking/create-checkout-session",
+        "https://server-airbnb.onrender.com/booking/create-checkout-session",
         JSON.stringify(bookCart), // Send bookCart as JSON string
         {
           headers: {
