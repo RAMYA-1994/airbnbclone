@@ -53,11 +53,11 @@ const Register = () => {
     }
 
     try {
-<<<<<<< HEAD
-      const res = await axios.post("http://localhost:8080/auth/register", {
-=======
-      const res = await axios.post("https://server-airbnb.onrender.com/auth/register", {
->>>>>>> 3124c60cc77aed09d00280a734c8e45ecfb92ab6
+
+      // const res = await axios.post("http://localhost:8080/auth/register", {
+
+      const res = await axios.post("https://airbnbclone-bt6d.onrender.com/auth/register", {
+
         name,
         email,
         password,
