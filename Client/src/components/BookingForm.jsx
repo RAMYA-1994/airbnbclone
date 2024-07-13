@@ -1,52 +1,47 @@
-import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-// import image from"../assets/icon.png"
-import {Calendar} from "@nextui-org/calendar";
-
+import { useContext } from "react";
+import { BookingContext } from "../Context/Bookingprovider";
+import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import { loadStripe } from "@stripe/stripe-js";
 
 const BookingPage = () => {
-  const [searchParams] = useSearchParams();
-  const accommodationId = searchParams.get('productId');
-  const checkInDate = searchParams.get('checkin');
-  const checkOutDate = searchParams.get('checkout');
-  const numberOfGuests = searchParams.get('numberOfGuests');
-  const numberOfAdults = searchParams.get('numberOfAdults');
-  const numberOfChildren = searchParams.get('numberOfChildren');
-  const numberOfInfants = searchParams.get('numberOfInfants');
-  const numberOfPets = searchParams.get('numberOfPets');
-  const guestCurrency = searchParams.get('guestCurrency');
-  const isWorkTrip = searchParams.get('isWorkTrip');
+  const { bookCart } = useContext(BookingContext);
+  const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    checkIn: checkInDate || '',
-    checkOut: checkOutDate || '',
-    adults: numberOfAdults || 1,
-    children: numberOfChildren || 0,
-    infants: numberOfInfants || 0,
-    pets: numberOfPets || 0,
-    workTrip: isWorkTrip === 'true',
-    currency: guestCurrency || 'USD'
-  });
+  const handleMakePayment = async () => {
+    try {
+      // Load Stripe
+      const stripe = await loadStripe(
+        "pk_test_51PSZdTEc38CqNOrJpWSRQsgdLvyQ9kHaByFwkhs7fIzXG2cd1G5itB3SgUzq8eaN7iUrrWn6f8w3n5grRAOXGfNi00Ph4VhOLB"
+      );
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === 'checkbox' ? checked : value
-    });
+      // Prepare data for Stripe Checkout
+      const response = await axios.post(
+        "http://localhost:8080/booking/create-checkout-session",
+        JSON.stringify(bookCart), // Send bookCart as JSON string
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      const sessionId = response.data.sessionId;
+
+      // Redirect to Checkout
+      const result = await stripe.redirectToCheckout({ sessionId });
+      if (result.error) {
+        toast.error("Payment can't start");
+      }
+    } catch (error) {
+      console.error("Error in handleMakePayment:", error);
+      toast.error("Payment failed");
+    }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Handle the booking submission logic here
-    console.log('Booking data:', formData);
-    // You can also send the data to your backend here
-  };
-  const [date, setDate] = useState(new Date());
-  const [openModel, setOpenModel] = useState(false);
   return (
     <>
       <section className="min-h-screen bg-white">
@@ -67,6 +62,7 @@ const BookingPage = () => {
                 strokeWidth="1.5"
                 stroke="currentColor"
                 className="h-12 w-12 cursor-pointer rounded-full p-3 font-semibold hover:bg-slate-50"
+                onClick={() => navigate(-1)}
               >
                 <path
                   strokeLinecap="round"
@@ -83,10 +79,7 @@ const BookingPage = () => {
                   <h1 className="font-medium">Dates</h1>
                   <p className="font-light">1-6 Jul</p>
                 </div>
-                <button
-                  onClick={() => setOpenModel(!openModel)}
-                  className="cursor-pointer font-medium underline"
-                >
+                <button className="cursor-pointer font-medium underline">
                   Edit
                 </button>
               </div>
@@ -97,7 +90,10 @@ const BookingPage = () => {
                 </div>
                 <p className="cursor-pointer font-medium underline">Edit</p>
               </div>
-              <button className="my-4 rounded-lg bg-[#ff385c] py-3 font-semibold uppercase text-white hover:bg-[#FF5580]">
+              <button
+                className="my-4 rounded-lg bg-[#ff385c] py-3 font-semibold uppercase text-white hover:bg-[#FF5580]"
+                onClick={handleMakePayment}
+              >
                 Reserve
               </button>
             </div>
@@ -105,26 +101,38 @@ const BookingPage = () => {
           <div className="w-[440px] rounded-lg p-4 ring-1 ring-slate-200">
             <div className="flex items-start gap-5">
               <img
-                src="https://images.unsplash.com/photo-1505691723518-36a5ac3be353?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8aG9tZXxlbnwwfHwwfHx8MA%3D%3D"
+                src={bookCart?.image_url}
                 alt="house"
                 className="object-fit h-28 w-32 rounded-lg bg-cover bg-center"
               />
               <div>
-                <h1 className="text-md font-semibold">Clouds Inn 12</h1>
-                <p className="text-sm font-light">Entire place</p>
-                <p className="text-sm font-light">
-                  Rating 4.50 out of 5; 2 reviews
-                </p>
-                <p className="text-sm font-light">
-                  4.50 (2 reviews) •Superhost
-                </p>
+                <h1 className="text-md font-semibold">{bookCart?.location}</h1>
+                <div className="flex space-x-2 items-center">
+                  <p className="text-sm font-light my-1">{bookCart?.rating}</p>
+                  {[1, 2, 3, 4].map((_, index) => (
+                    <svg
+                      key={index}
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      className="size-4 text-orange-400"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  ))}
+                  <p className="text-sm font-light">52 (reviews) •Superhost</p>
+                </div>
               </div>
             </div>
             <div className="my-4 border-t" />
             <div>
               <h1 className="text-xl font-semibold">Price details</h1>
               <div className="my-3 flex justify-between font-normal">
-                <h1>₹7,970 x 5 nights</h1>
+                <h1>{bookCart?.price} x 5 nights</h1>
                 <p>₹39,850</p>
               </div>
               <div className="my-3 flex justify-between font-normal">
@@ -144,9 +152,9 @@ const BookingPage = () => {
           </div>
         </div>
       </section>
+      <ToastContainer />
     </>
   );
-}
-
+};
 
 export default BookingPage;

@@ -1,39 +1,48 @@
-import Stripe from "stripe";
-import { configDotenv } from "dotenv";
+require("dotenv").config();
+const Stripe = require("stripe");
+const stripe = Stripe(process.env.STRIPE_SECRET);
 
-// Config env file
-configDotenv();
-
-export const handleCheckoutPayment = async (req, res) => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const handleCheckoutPayment = async (req, res) => {
   try {
     const data = req.body;
-    console.log(typeof data);
     
-    // Check if data is missing or not an array
-    if (!Array.isArray(data) || data.length === 0) {
-      return res.status(400).send({ error: "Product data is required and must be an array" });
+    // Validate incoming data
+    if (
+      !data ||
+      typeof data !== "object" ||
+      !data.location ||
+      !data.image_url ||
+      !data.price
+    ) {
+      return res.status(400).send({ error: "Invalid product data" });
     }
 
-    const lineItems = data.map((item) => ({
+    // Ensure price is a valid number
+    const unitAmount = parseFloat(data.price);
+    if (isNaN(unitAmount) || unitAmount <= 0) {
+      return res.status(400).send({ error: "Invalid price value" });
+    }
+
+    // Create line item for checkout session
+    const lineItem = {
       price_data: {
         currency: "usd",
         product_data: {
-          name: item.name,
-          images: [item.image_url], // Correct property name is 'images'
+          name: data.location,
+          images: [data.image_url],
         },
-        unit_amount: Math.round(item.price * 100), // Ensure price is correctly converted to cents
+        unit_amount: Math.round(unitAmount * 100), // Convert price to cents
       },
-      quantity: item.quantity,
-    }));
+      quantity: data.quantity || 1, // Default quantity to 1 if not provided
+    };
 
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: lineItems,
+      line_items: [lineItem],
       mode: "payment",
-      // success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      // cancel_url: `${req.headers.origin}/cancel`, // Properly include cancel_url
+      success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.origin}/cancel`,
     });
 
     res.status(200).json({ sessionId: session.id });
@@ -42,3 +51,5 @@ export const handleCheckoutPayment = async (req, res) => {
     res.status(500).send({ error: "Internal Server Error" });
   }
 };
+
+module.exports = handleCheckoutPayment;

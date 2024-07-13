@@ -1,102 +1,150 @@
-import React, {useState} from 'react';
-import '../styles/Page.css'
-import { Link, useNavigate } from 'react-router-dom';
-import {message} from 'antd';
-import axios from 'axios';
-import { BsEye, BsEyeSlash } from 'react-icons/bs';
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { message } from "antd";
+import axios from "axios";
+import { BsEye, BsEyeSlash } from "react-icons/bs";
+import { BookingContext } from "../Context/Bookingprovider";
 
 const LoginPage = () => {
-
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword] = useState(false);
+  const { setIsLoggedIn } = useContext(BookingContext);
   const navigate = useNavigate();
-  const [password, setPassword] = useState();
-  const [email, setEmail] = useState();
-  const [showPassword, setShowPassword] = useState(false);
+  const onSubmitHandler = async (e) => {
+    e.preventDefault();
 
-  const onSubmitHandler = async(e) =>
-  {
-      e.preventDefault();
-     
+    if (!email || !password) {
+      message.error("Please fill in all fields");
+      return;
+    }
 
-      if ( !email || !password ) {
-        message.error('Please fill in all fields');
-        return;
+    try {
+      const res = await axios.post("http://localhost:8080/auth/login", {
+        email,
+        password,
+      });
+      if (res.data) {
+        localStorage.setItem("token", res.data.token);
+        message.success("Logged In...");
+        setIsLoggedIn(true);
+        navigate("/");
+      } else {
+        message.error(res.data.message);
       }
-
-      try
-      {
-        const res = await axios.post("http://localhost:5050/auth/login" ,{email, password});
-        if(res.data.success)
-        {
-          localStorage.setItem("token", res.data.token);
-          message.success('Login Successfully');
-          navigate('/account');
-        }
-        else
-        {
-          message.error(res.data.message);
-        }
-      }
-      catch(error)
-      {
-        console.log(error);
-        message.error('Something went wrong');
-      }
-  }
+    } catch (error) {
+      console.error("Login Error:", error);
+      message.error("Something went wrong");
+    }
+  };
 
   return (
-    <div className='login template d-flex justify-content-center align-items-center vh-100 bg-info ' >
-      
-        <div className= 'form_container p-5 rounded bg-white' >
-        <form onSubmit={onSubmitHandler}>
-            <h3 className='text-center loginPage pb-2'>Login Page</h3>
-            <div className='mb-2'>
-               <label className='pb-1 bold'>Email </label>
-               <input type='email'
-                placeholder='enter your email...' 
-                className='form-control'
-                autoComplete='off'
-                style={{borderColor : '#c0c0c0'}}
-                onChange={(e)=>setEmail(e.target.value)} />
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={onSubmitHandler}>
+          <input type="hidden" name="remember" value="true" />
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="email-address" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="relative">
+              <label htmlFor="password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <BsEyeSlash
+                  className={`h-5 w-5 text-indigo-500 cursor-pointer ${
+                    showPassword ? "hidden" : "block"
+                  }`}
+                />
+                <BsEye
+                  className={`h-5 w-5 text-indigo-500 cursor-pointer ${
+                    showPassword ? "block" : "hidden"
+                  }`}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="remember-me"
+                className="ml-2 block text-sm text-gray-900"
+              >
+                Remember me
+              </label>
             </div>
 
-            <div className='mb-2 pt-1'>
-        <label className='pb-1 bold'>Password </label>
-        <div className='input-group'>
-          <input
-            type={showPassword ? 'text' : 'password'}
-            placeholder='Enter password...'
-            className='form-control'
-            autoComplete='off'
-            style={{ borderColor: '#c0c0c0' }}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button
-            type='button'
-            className='btn btn-outline-secondary'
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <BsEye /> : <BsEyeSlash />}
-          </button>
+            <div className="text-sm">
+              <Link
+                to="/forgot-password"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Forgot your password?
+              </Link>
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Log in
+            </button>
+          </div>
+        </form>
+
+        <div className="text-center">
+          <p className="text-sm">
+            Don't have an account?{" "}
+            <Link
+              to="/signup"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+            >
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
-
-               
-              <div className='mb-2 pt-2 pb-1'>
-                <input type='checkbox' className='custom-control custom-check-box' id='check'/>
-                <label htmlFor='check' className='custom-input-label ms-2'>
-                   Remember Me
-                </label>
-              </div> 
-
-             <div className='d-grid pt-1'>
-                  <button className='btn btn-primary' type='submit'>Log In</button>
-             </div> 
-             
-              <p className='text-center mt-3'><Link to='/account'>create an accout</Link></p>
-        </form>
-        </div>
     </div>
-  )
-}
+  );
+};
 
-export default LoginPage
+export default LoginPage;
