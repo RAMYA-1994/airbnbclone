@@ -11,7 +11,11 @@ const Card = () => {
     const fetchAccommodations = async () => {
       try {
         const response = await axios.get(
+<<<<<<< HEAD
           "http://localhost:8080/place/accommodation"
+=======
+          "https://server-airbnb.onrender.com/place/accommodation"
+>>>>>>> 3124c60cc77aed09d00280a734c8e45ecfb92ab6
         );
         setAccommodations(response.data.accommodations); // Assuming data structure is directly an array
         setLoading(false); // Update loading state

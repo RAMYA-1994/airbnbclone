@@ -20,7 +20,11 @@ const LoginPage = () => {
     }
 
     try {
+<<<<<<< HEAD
       const res = await axios.post("http://localhost:8080/auth/login", {
+=======
+      const res = await axios.post("https://server-airbnb.onrender.com/auth/login", {
+>>>>>>> 3124c60cc77aed09d00280a734c8e45ecfb92ab6
         email,
         password,
       });
