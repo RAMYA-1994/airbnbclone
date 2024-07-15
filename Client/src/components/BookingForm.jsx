@@ -22,7 +22,7 @@ const BookingPage = () => {
 
         // "http://localhost:8080/booking/create-checkout-session",
 
-        "https://airbnbclone-bt6d.onrender.com/booking/create-checkout-session",
+        "https://airbnbclone-ho1b.onrender.com/booking/create-checkout-session",
 
         JSON.stringify(bookCart), // Send bookCart as JSON string
         {

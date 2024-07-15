@@ -13,7 +13,7 @@ const Card = () => {
         const response = await axios.get(
 
           // "http://localhost:8080/place/accommodation"
-          "https://airbnbclone-bt6d.onrender.com/place/accommodation"
+          "https://airbnbclone-ho1b.onrender.com/place/accommodation"
 
         );
         setAccommodations(response.data.accommodations); // Assuming data structure is directly an array

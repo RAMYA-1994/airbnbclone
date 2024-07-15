@@ -56,7 +56,7 @@ const Register = () => {
 
       // const res = await axios.post("http://localhost:8080/auth/register", {
 
-      const res = await axios.post("https://airbnbclone-bt6d.onrender.com/auth/register", {
+      const res = await axios.post("https://airbnbclone-ho1b.onrender.com/auth/register", {
 
         name,
         email,
